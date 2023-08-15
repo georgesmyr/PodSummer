@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 import json
-import requests
 
 import feedparser
 
@@ -23,20 +22,23 @@ class PodSummer:
         """
         Initialisation of PodSummer instance
         """
+        # Chat Model
+        self.chat_model = "gpt-3.5-turbo"
+        self.openai_api_key = utils.load_text('api_key.txt')
+        self.setOpenAI_API_KEY()
+
+        # Audio Transcription Model
         self.trans_model_path = "model/medium.pt"
         self.trans_model = None  # Transcription model
-
-        self.openai_api_key = "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"
-        self.chat_model = "gpt-3.5-turbo"
 
         self.current_pod_feed = None
 
     def setOpenAI_API_KEY(self):
         """
         """
-        openai.api_key = self.opanai_api_key
+        openai.api_key = self.openai_api_key
 
-    def loadWhisperModel(self):
+    def loadWhisper(self):
         """
         Loads the whisper model.
         """
@@ -66,7 +68,7 @@ class PodSummer:
         """
         # Read from the RSS feed URL
         pod_feed = feedparser.parse(rss_url)
-        for link in pod_feed.entries[0].links:  # Each entry is one episode with its info
+        for link in pod_feed.entries[1].links:  # Each entry is one episode with its info
             if link['type'] == 'audio/mpeg':
                 episode_url = link.href
         print("RSS URL read. Episode URL: ", episode_url)
@@ -87,14 +89,14 @@ class PodSummer:
         """
         # Load transcribing model if it's not already loaded
         if self.trans_model is None:
-            self.load_whisper_model()
+            raise ImportError("No transcirption model has been loaded.")
 
         print("Starting podcast transcription")
         result = self.trans_model.transcribe(audio_path)
         print("Transcription completed")
 
         audio_transcript = result['text']
-        utils.save_text_file(audio_transcript, transcript_path)
+        utils.save_text(audio_transcript, transcript_path)
         print("Transcript saved")
 
     def chatComplete(self, prompt, msgs):
@@ -114,12 +116,12 @@ class PodSummer:
                                                   messages=msgs)
         return chatOutput
 
-    def summarizeText(self, transcript_path, summary_path):
+    def summarizeTranscript(self, transcript_path, summary_path):
         """
         Loads the podcast transcript and summarizes it.
         """
         # Load podcast transcript
-        podcast_transcript = utils.load_text_file(transcript_path)
+        podcast_transcript = utils.load_text(transcript_path)
 
         instructPrompt = f""" You will be provided with a transcript of a weekly podcast.
                         I love listening to podcasts, but there are many options, and my
@@ -133,9 +135,9 @@ class PodSummer:
 
         chatOutput = self.chatComplete(instructPrompt, messages)
         summary = chatOutput.choices[0].message.content
-        utils.save_text_file(summary, summary_path)
+        utils.save_text(summary, summary_path)
 
-    def extractGuestInfo(self, text, info_folder):
+    def getGuestInfo(self, text, info_folder):
         """
         Extracts information about the guest of the podcast.
         Information that we are interested in is his full name,
@@ -143,11 +145,13 @@ class PodSummer:
         part of, and his specialty/job.
         """
         system_role = "You are a helpful assistant that extracts guest information from podcast transcripts."
+
         msgs = [{"role": "system", "content": system_role},
                 {"role": "user", "content": text}]
-        function_description = """Goes through the provided podcast transcript
-         and extracts the name of the guest as well as the company
-         or institute he or she is part of
+
+        function_description = """Get information on the podcast guest using
+         their full name and the name of the organization they are part of to
+          search for them on Wikipedia or Google
          """
 
         # Call the OpenAI API to extract guest information
@@ -163,34 +167,66 @@ class PodSummer:
                         "properties": {
                             "guest_name": {
                                 "type": "string",
-                                "description": "Full name of the guest"
+                                "description": "The full name of the guest who is speaking in the podcast",
                             },
-                            "unit": {"type": "string"},
+                            "guest_organization": {
+                                "type": "string",
+                                "description": """The full name of the organization that
+                                                the podcast guest belongs to or runs""",
+                            },
+                            "guest_title": {
+                                "type": "string",
+                                "description": """The title, designation or role of the
+                                                podcast guest in their organization.""",
+                            },
                         },
-                        "required": ["guest_name"]
-                    }
+                        "required": ["guest_name"],
+                    },
                 }
             ],
-            function_call={
-                "name": "get_podcast_guest_information",
-            }
+            function_call={"name": "get_podcast_guest_information"}
         )
 
         podcast_guest = ""
+        podcast_guest_org = ""
+        podcast_guest_title = ""
         response_message = completion["choices"][0]["message"]
         if response_message.get("function_call"):
             function_args = json.loads(response_message["function_call"]["arguments"])
             podcast_guest = function_args.get("guest_name")
+            podcast_guest_org = function_args.get("guest_organisation")
+            podcast_guest_title = function_args.get("guest_title")
 
-        # Use the guest's name to retrieve more info from wikipedia
+            if podcast_guest_org is None:
+                podcast_guest_org = ""
+            if podcast_guest_title is None:
+                podcast_guest_title = ""
+
+        # Use the guest's info to retrieve more info from wikipedia
+        wiki_query = podcast_guest + " " + podcast_guest_org + " " + podcast_guest_title
         if podcast_guest:
-            wiki = wikipedia.page(podcast_guest, auto_suggest=False)
-            pod_guest_info = wiki.summary
+            try:
+                wiki = wikipedia.page(wiki_query, auto_suggest=True)
+                pod_guest_info = wiki.summary
+            except:
+                print("No wikipedia page found for guest.")
+                pod_guest_info = ""
 
-            utils.save_text_file(pod_guest_info, info_folder + "guest_info.txt")
+            utils.save_text(pod_guest_info, info_folder + "guest_info.txt")
 
+    def getHighlights(self, transcript, highlights_path):
+        """
+        Extracts the highlights from the podcast's transcript
+        """
+        prompt = f""" I want you to extract the key highlights of the podcast
+        whose trancript is: {transcript}
+        """
+        msgs = [{"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}]
+        chatOutput = self.chatComplete(prompt, msgs)
+        highlights = chatOutput.choices[0].message.content
 
-
+        utils.save_text(highlights, highlights_path)
 
 
 
