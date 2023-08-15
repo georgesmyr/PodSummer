@@ -228,5 +228,8 @@ class PodSummer:
 
         utils.save_text(highlights, highlights_path)
 
+    def makeNewsLetter(self):
+        """
 
-
+        :return:
+        """
