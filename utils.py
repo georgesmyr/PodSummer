@@ -1,4 +1,5 @@
 import requests
+import re
 
 
 def load_text(text_path):
@@ -34,3 +35,11 @@ def download_audio(episode_url, audio_path):
             # It's a good practice when handling big files
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
+
+
+def to_filename(text):
+    """
+    Takes a text as an input and returns a string
+    with words separated with underscore '_'
+    """
+    return re.sub(r'\s+', ' ', re.sub(r'[^\w\s]', ' ', text)).strip().lower().replace(" ", "_")
