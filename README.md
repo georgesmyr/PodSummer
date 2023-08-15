@@ -1,7 +1,4 @@
 # PodSummer
 Podcast summarisation and recommendation
 
-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
-
-
 news: 4e694eee5be7402c980c89572c6c9267
