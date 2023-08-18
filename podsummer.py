@@ -22,21 +22,38 @@ class PodSummer:
         """
         Initialisation of PodSummer instance
         """
-        # Chat Model
+        # OpenAI GPT Model
         self.chat_model = "gpt-3.5-turbo"
-        self.openai_api_key = utils.load_text('api_key.txt')
         self.setOpenAI_API_KEY()
 
         # Audio Transcription Model
         self.trans_model_path = "model/medium.pt"
-        self.trans_model = None  # Transcription model
+        self.trans_model = None
 
-        self.current_pod_feed = None
+        # Podcast Information
+        self.podcast_title = None
+        self.episode_number = None
+        self.episode_title = None
+        self.episode_subtitle = None
+        self.episode_summary = None
+
+        # Directories
+        self.content_dir = Path('content/')
+        self.content_dir.mkdir(exist_ok=True)
+        self.podcast_dir = None
+        self.episode_dir = None
+
+        # Filepaths
+        self.audio_path = None
+        self.transcript_path = None
+        self.summary_path = None
+        self.highlights_path = None
 
     def setOpenAI_API_KEY(self):
         """
+        Sets OpenAI API key
         """
-        openai.api_key = self.openai_api_key
+        openai.api_key = utils.load_text('api_key.txt')
 
     def loadWhisper(self):
         """
@@ -61,28 +78,55 @@ class PodSummer:
         print("Model loaded")
         print("Device: ", self.trans_model.device)
 
-    def getPodcast(self, rss_url, local_path, episode_name):
+    def extractEpisodeInfo(self, pod_feed, num):
+        """
+        Gets podcast feed and episode number starting from the end and extracts:
+        1. Episode title
+        2. Episode number
+        3. Episode Summary (provided by the podcasters)
+        if they exist.
+        """
+        episode = pod_feed.entries[num]
+        self.episode_title = episode.title
+        self.episode_number = len(pod_feed.entries) - num
+        self.episode_summary = episode.summary
+
+    def getPodcast(self, rss_url, num=0):
         """
         Downloads the audio from the last podcast in the rss_url
         and saves it in the local path
         """
         # Read from the RSS feed URL
         pod_feed = feedparser.parse(rss_url)
-        for link in pod_feed.entries[1].links:  # Each entry is one episode with its info
+        # Sellect entry/episode and extract info
+        self.podcast_title = pod_feed.feed.title
+        pod_episode = pod_feed.entries[num]
+        episode_info = self.extractEpisodeInfo(pod_feed, num)
+        # Find episode audio URL
+        for link in pod_episode.links:
             if link['type'] == 'audio/mpeg':
                 episode_url = link.href
         print("RSS URL read. Episode URL: ", episode_url)
 
-        # Download the podcast by parsing the RSS feed.
-        audio_folder = Path(local_path)
-        audio_folder.mkdir(exist_ok=True)  # If the directory doesn't exist, it will be created
-        audio_path = audio_folder.joinpath(episode_name)
+        # Setup podcast folder
+        podcast_folder = utils.to_filename(self.podcast_title)
+        self.podcast_dir = self.content_dir.joinpath(podcast_folder)
+        self.podcast_dir.mkdir(exist_ok=True)
+        # Setup episode folder
+        self.episode_dir = self.podcast_dir.joinpath(f"episode_{self.episode_number}")
+        self.episode_dir.mkdir(exist_ok=True)
+        # Determin audio, transcript, summary and highlights path
+        self.audio_path = self.episode_dir.joinpath("audio.mp3")
+        self.transcript_path = self.episode_dir.joinpath("transcript.txt")
+        self.summary_path = self.episode_dir.joinpath("summary.txt")
+        self.highlights_path = self.episode_dir.joinpath("highlights.txt")
 
+        # Download the podcast audio by parsing the RSS feed.
         print("Downloading the podcast episode")
-        utils.download_audio(episode_url, audio_path)
+        utils.download_audio(episode_url, self.audio_path)
         print("Podcast episode downloaded")
 
-    def transcribeAudio(self, audio_path, transcript_path):
+    def transcribeAudio(self):
         """
         Loads the audio of the audio at audio_path
         transcribes it and saves it at transcript_path
@@ -92,11 +136,11 @@ class PodSummer:
             raise ImportError("No transcirption model has been loaded.")
 
         print("Starting podcast transcription")
-        result = self.trans_model.transcribe(audio_path)
+        result = self.trans_model.transcribe(str(self.audio_path))
         print("Transcription completed")
 
         audio_transcript = result['text']
-        utils.save_text(audio_transcript, transcript_path)
+        utils.save_text(audio_transcript, self.transcript_path)
         print("Transcript saved")
 
     def chatComplete(self, prompt, msgs):
@@ -123,7 +167,11 @@ class PodSummer:
         # Load podcast transcript
         podcast_transcript = utils.load_text(transcript_path)
 
-        instructPrompt = f""" You will be provided with a transcript of a weekly podcast.
+        instructPrompt = f""" You will be provided with a transcript of a an episode of
+                        a weekly podcast called {self.podcast_title}. The episode's title
+                        is {self.episode_title}. The podcast hosts provided also the episode's
+                        summary: {self.episode_summary}.
+
                         I love listening to podcasts, but there are many options, and my
                         free time is limited. Therefore, I want you to summarize the
                         podcast so that I can decide whether to listen to it or not.
@@ -214,10 +262,11 @@ class PodSummer:
 
             utils.save_text(pod_guest_info, info_folder + "guest_info.txt")
 
-    def getHighlights(self, transcript, highlights_path):
+    def getHighlights(self, transcript_path, highlights_path):
         """
         Extracts the highlights from the podcast's transcript
         """
+        transcript = utils.load_text(transcript_path)
         prompt = f""" I want you to extract the key highlights of the podcast
         whose trancript is: {transcript}
         """
@@ -231,5 +280,7 @@ class PodSummer:
     def makeNewsLetter(self):
         """
 
-        :return:
         """
+
+
+
