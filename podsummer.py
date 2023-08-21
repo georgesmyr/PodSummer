@@ -122,9 +122,9 @@ class PodSummer:
         self.highlights_path = self.episode_dir.joinpath("highlights.txt")
 
         # Download the podcast audio by parsing the RSS feed.
-        print("Downloading the podcast episode")
+        print("Downloading the podcast episode ...")
         utils.download_audio(episode_url, self.audio_path)
-        print("Podcast episode downloaded")
+        print("Podcast episode downloaded.")
 
     def transcribeAudio(self):
         """
@@ -135,13 +135,13 @@ class PodSummer:
         if self.trans_model is None:
             raise ImportError("No transcirption model has been loaded.")
 
-        print("Starting podcast transcription")
+        print("Starting podcast transcription ...")
         result = self.trans_model.transcribe(str(self.audio_path))
         print("Transcription completed")
 
         audio_transcript = result['text']
         utils.save_text(audio_transcript, self.transcript_path)
-        print("Transcript saved")
+        print("Transcript saved.")
 
     def chatComplete(self, prompt, msgs):
         """
@@ -160,30 +160,39 @@ class PodSummer:
                                                   messages=msgs)
         return chatOutput
 
-    def summarizeTranscript(self, transcript_path, summary_path):
+    def summarizeTranscript(self):
         """
         Loads the podcast transcript and summarizes it.
         """
+        print("Summarizing episode ...")
         # Load podcast transcript
-        podcast_transcript = utils.load_text(transcript_path)
+        podcast_transcript = utils.load_text(self.transcript_path)
 
-        instructPrompt = f""" You will be provided with a transcript of a an episode of
-                        a weekly podcast called {self.podcast_title}. The episode's title
-                        is {self.episode_title}. The podcast hosts provided also the episode's
-                        summary: {self.episode_summary}.
+        instructPrompt = f"""As a podcast enthusiast with limited free time, 
+                         I often rely on episode summaries to decide which 
+                         podcasts to listen to. I need your assistance in 
+                         summarizing an episode from the podcast "{self.podcast_title}" 
+                         to help me make an informed choice.
 
-                        I love listening to podcasts, but there are many options, and my
-                        free time is limited. Therefore, I want you to summarize the
-                        podcast so that I can decide whether to listen to it or not.
-                        Transcript of the podcast: {podcast_transcript}
-                        Summary:
-                        """
+                         I will provide you with the transcript of an episode titled
+                          "{self.episode_title}" and a summary provided by the podcasters.
+                          Your task is to generate a concise, informative summary of the
+                          episode's content based on the transcript. Additionally, please
+                          use the summary provided by the podcasters as a reference and
+                          consider incorporating relevant information from it into your summary.
+
+                         Transcript: {podcast_transcript}
+                         Summary from podcasters: {self.episode_summary}
+                         Summary:
+                         """
+
         messages = [{"role": "system", "content": "You are a helpful assistant"},
                     {"role": "user", "content": instructPrompt}]
 
         chatOutput = self.chatComplete(instructPrompt, messages)
         summary = chatOutput.choices[0].message.content
-        utils.save_text(summary, summary_path)
+        utils.save_text(summary, self.summary_path)
+        print("Summary saved.")
 
     def getGuestInfo(self, text, info_folder):
         """
@@ -262,25 +271,73 @@ class PodSummer:
 
             utils.save_text(pod_guest_info, info_folder + "guest_info.txt")
 
-    def getHighlights(self, transcript_path, highlights_path):
+    def getHighlights(self):
         """
         Extracts the highlights from the podcast's transcript
         """
-        transcript = utils.load_text(transcript_path)
-        prompt = f""" I want you to extract the key highlights of the podcast
-        whose trancript is: {transcript}
-        """
+        print("Getting episode highlights ...")
+        podcast_transcript = utils.load_text(self.transcript_path)
+        prompt = f"""I'm an avid podcast listener, and I'm always looking for
+                 the key takeaways or contentious points discussed in episodes.
+                  Additionally, when I listen to self-help podcasts, I like to
+                  have a clear list of actionable suggestions and the overarching
+                  goal in mind. Can you assist me with this?
+
+                  I'll provide you with the transcript of a podcast episode titled
+                  "{self.episode_title}". Your task is to extract the following information:
+
+                  1. **Highlights:** Summarize the key highlights or important insights
+                   discussed in the episode.
+
+                  2. **Contentious Points:** Identify and summarize any contentious or debated
+                   topics that arise during the episode.
+
+                  3. **Suggestions:** If this is a self-help or advice-based podcast,
+                   list the actionable suggestions or advice given by the guest or host,
+                    along with the overarching goal they aim to achieve.
+
+                  Transcript: {podcast_transcript}
+
+                  Please organize the information clearly and separate the highlights,
+                   contentious points, and self-help suggestions distinctly. This will help
+                    me quickly grasp the most important aspects of the episode.
+                """
+
         msgs = [{"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt}]
         chatOutput = self.chatComplete(prompt, msgs)
         highlights = chatOutput.choices[0].message.content
+        utils.save_text(highlights, self.highlights_path)
+        print("Highlights saved.")
 
-        utils.save_text(highlights, highlights_path)
+    def clearParams(self):
+        """
+        """
+        # Podcast Information
+        self.podcast_title = None
+        self.episode_number = None
+        self.episode_title = None
+        self.episode_subtitle = None
+        self.episode_summary = None
+        # Directories
+        self.podcast_dir = None
+        self.episode_dir = None
+        # Filepaths
+        self.audio_path = None
+        self.transcript_path = None
+        self.summary_path = None
+        self.highlights_path = None
 
-    def makeNewsLetter(self):
+    def makeNewsLetter(self, rss_url):
         """
 
         """
+        self.getPodcast(rss_url)
+        self.transcribeAudio()
+        self.summarizeTranscript()
+        self.getHighlights()
+
+        # self.clearParams()
 
 
 
