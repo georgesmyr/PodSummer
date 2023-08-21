@@ -310,24 +310,6 @@ class PodSummer:
         utils.save_text(highlights, self.highlights_path)
         print("Highlights saved.")
 
-    def clearParams(self):
-        """
-        """
-        # Podcast Information
-        self.podcast_title = None
-        self.episode_number = None
-        self.episode_title = None
-        self.episode_subtitle = None
-        self.episode_summary = None
-        # Directories
-        self.podcast_dir = None
-        self.episode_dir = None
-        # Filepaths
-        self.audio_path = None
-        self.transcript_path = None
-        self.summary_path = None
-        self.highlights_path = None
-
     def makeNewsLetter(self, rss_url):
         """
 
