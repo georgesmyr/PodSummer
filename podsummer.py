@@ -312,14 +312,11 @@ class PodSummer:
 
     def makeNewsLetter(self, rss_url):
         """
-
+        Entry-point for news-letter
         """
         self.getPodcast(rss_url)
         self.transcribeAudio()
         self.summarizeTranscript()
         self.getHighlights()
-
-        # self.clearParams()
-
 
 
