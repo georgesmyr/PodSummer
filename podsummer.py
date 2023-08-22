@@ -101,7 +101,7 @@ class PodSummer:
         # Sellect entry/episode and extract info
         self.podcast_title = pod_feed.feed.title
         pod_episode = pod_feed.entries[num]
-        episode_info = self.extractEpisodeInfo(pod_feed, num)
+        self.extractEpisodeInfo(pod_feed, num)
         # Find episode audio URL
         for link in pod_episode.links:
             if link['type'] == 'audio/mpeg':
