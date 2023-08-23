@@ -4,7 +4,7 @@ import modal
 def download_whisper():
     # Load the Whisper model
     import whisper
-    print ("Download the Whisper model")
+    print("Download the Whisper model")
 
     # Perform download only once and save to Container storage
     whisper._download(whisper._MODELS["medium"], '/content/podcast/', False)
@@ -40,6 +40,7 @@ def get_transcribe_podcast(rss_url):
     episode = podcast_feed.entries[0]
     episode_title = episode['title']
     episode_summary = episode['summary']
+    episode_url = ""
     for link in episode.links:
         if link['type'] == 'audio/mpeg':
             episode_url = link.href
@@ -69,14 +70,14 @@ def get_transcribe_podcast(rss_url):
     # Perform the transcription
     print("Starting podcast transcription ...")
     result = model.transcribe(str(episode_path))
-    transcript =  result['text']
+    transcript = result['text']
     print("Podcast transcription completed. Returning results.")
 
     return {'podcast_title': podcast_title,
-        'podcast_image': podcast_image,
-        'episode_title': episode_title,
-        'given_summary': episode_summary,
-        'episode_transcript': transcript}
+            'podcast_image': podcast_image,
+            'episode_title': episode_title,
+            'given_summary': episode_summary,
+            'episode_transcript': transcript}
 
 
 @stub.function(image=podsummer_image, secret=modal.Secret.from_name("my-openai-secret"))
@@ -181,6 +182,14 @@ def get_podcast_highlights(podcast_details):
     return highlights
 
 
+@stub.function(image=podsummer_image)
+def process_podcast(rss_url):
+    podcast_details = get_transcribe_podcast.remote(rss_url)
+    podcast_details['episode_summary'] = get_podcast_summary.remote(podcast_details)
+    podcast_details['episode_highlights'] = get_podcast_highlights.remote(podcast_details)
+    return podcast_details
+
+
 @stub.local_entrypoint()
 def test_method(rss_url):
     podcast_details = get_transcribe_podcast.remote(rss_url)
@@ -191,4 +200,3 @@ def test_method(rss_url):
     print("Episode Title:", podcast_details['episode_title'])
     print("Podcast Summary:", podcast_details['episode_summary'])
     print("Podcast highlights:", podcast_details['episode_highlights'])
-
