@@ -1,15 +1,22 @@
+# OS libraries
 import os
 from pathlib import Path
 import json
 
+# Feed parser libraries
 import feedparser
 
+# Audio transcription libraries
 import whisper
+
+# LLM libraries
 import openai
 import tiktoken
 
+# Guest information libraries
 import wikipedia
 
+# My utility libraries
 import utils
 
 
@@ -49,16 +56,16 @@ class PodSummer:
         self.summary_path = None
         self.highlights_path = None
 
+    def setChatModel(self, model):
+        """ Sets the chat model """
+        self.chat_model = model
+
     def setOpenAI_API_KEY(self):
-        """
-        Sets OpenAI API key
-        """
+        """ Sets OpenAI API key """
         openai.api_key = utils.load_text('api_key.txt')
 
     def loadWhisper(self):
-        """
-        Loads the whisper model.
-        """
+        """ Loads the whisper model """
         folder_path = os.path.dirname(self.trans_model_path)
         # Check if the file path exists
         if not os.path.exists(self.trans_model_path):

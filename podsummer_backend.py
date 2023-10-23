@@ -32,6 +32,7 @@ def get_transcribe_podcast(rss_url):
     """
     print("Getting podcast from RSS URL ...")
     print("Feed URL:", rss_url)
+    
     # Read from the RSS URL
     import feedparser
     podcast_feed = feedparser.parse(rss_url)
