@@ -1,6 +1,7 @@
 import torch
 import whisperx
 import gc
+import utils
 
 class AudioTranscriber:
     """ Class that transcribes audio """
@@ -13,15 +14,16 @@ class AudioTranscriber:
         self.trans_model = trans_model
         self.HF_TOKEN = "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"
 
-    def transcribe_audio(self, audio_path, align=True, diarize=True):
+    def transcribe_audio(self, audio_path, transcript_path, align=True, diarize=True):
         """ Transcribe the audio, align the transcription with the audio and diarize the audio """
         print("Loading audio...")
         audio = whisperx.load_audio(audio_path)
         print("Transcribing audio with Whisper...")
         trans_model = whisperx.load_model(self.trans_model, device=self.device, compute_type=self.compute_type)
         result = trans_model.transcribe(audio, batch_size=self.batch_size)
+        mode = 'transcribed'
         if self.device == 'cuda':
-             # delete model if low on GPU resources
+            print("Deleting model to free up GPU resources...")
             gc.collect(); torch.cuda.empty_cache(); del trans_model
 
         if align:
@@ -30,17 +32,23 @@ class AudioTranscriber:
                                                             device=self.device)
             result = whisperx.align(result["segments"], align_model,
                                                  metadata, audio, self.device, return_char_alignments=False)
+            mode = 'aligned'
             if self.device == 'cuda':
-                # delete model if low on GPU resources
-                gc.collect(); torch.cuda.empty_cache(); del trans_model
+                print("Deleting model to free up GPU resources...")
+                gc.collect(); torch.cuda.empty_cache(); del align_model
 
             if diarize:
                 print("Diarizing...")
                 diarize_model = whisperx.DiarizationPipeline(use_auth_token=self.HF_TOKEN, device=self.device)
                 diarize_segments = diarize_model(audio)
                 result = whisperx.assign_word_speakers(diarize_segments, result)
+                mode = 'diarized'
                 if self.device == 'cuda':
-                    # delete model if low on GPU resources
-                    gc.collect(); torch.cuda.empty_cache(); del trans_model
+                    print("Deleting model to free up GPU resources...")
+                    gc.collect(); torch.cuda.empty_cache(); del diarize_model
 
+        result['mode'] = mode 
+        print('Saving result...')
+        utils.save_json(result, transcript_path)
+        
         return result

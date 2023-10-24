@@ -1,7 +1,6 @@
 import utils
 from pathlib import Path
 import feedparser
-import mimetypes
 
 class Podcast:
     """ Class that holds the podcast feed and its metadata """
@@ -30,7 +29,7 @@ class Episode:
         paths = {}
         # Files' names
         AUDIO_FILE_NAME = "audio.mp3"
-        TRANSCRIPT_FILE_NAME = "transcript.txt"
+        TRANSCRIPT_FILE_NAME = "transcript.json"
         SUMMARY_FILE_NAME = "summary.txt"
         HIGHLIGHTS_FILE_NAME = "highlights.txt"
         # Setup content folder
@@ -44,17 +43,14 @@ class Episode:
         episode_directory = podcast_directory.joinpath(f"episode_{0}")
         episode_directory.mkdir(exist_ok=True)
         # Determin audio, transcript, summary and highlights path
-        paths['audio_path'] = episode_directory.joinpath(AUDIO_FILE_NAME)
-        paths['transcript_path']= episode_directory.joinpath(TRANSCRIPT_FILE_NAME)
-        paths['summary_path'] = episode_directory.joinpath(SUMMARY_FILE_NAME)
-        paths['highlights_path'] = episode_directory.joinpath(HIGHLIGHTS_FILE_NAME)
+        paths['audio'] = episode_directory.joinpath(AUDIO_FILE_NAME)
+        paths['transcript']= episode_directory.joinpath(TRANSCRIPT_FILE_NAME)
+        paths['summary'] = episode_directory.joinpath(SUMMARY_FILE_NAME)
+        paths['highlights'] = episode_directory.joinpath(HIGHLIGHTS_FILE_NAME)
 
         return paths
 
     def download(self):
         """ Downloads the episode audio """
         # Check file type before downloading
-        file_type, _ = mimetypes.guess_type(self.url)
-        if file_type != 'audio/mpeg':
-            raise ValueError("Invalid audio file type")
-        utils.download_audio(self.url, audio_path=self.file_paths['audio_path'])
+        utils.download_audio(self.url, audio_path=self.file_paths['audio'])
