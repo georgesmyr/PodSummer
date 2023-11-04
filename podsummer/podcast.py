@@ -1,4 +1,4 @@
-import utils
+from . import utils
 from pathlib import Path
 import feedparser
 

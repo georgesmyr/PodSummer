@@ -4,7 +4,7 @@ import gc
 import os
 from pathlib import Path
 
-import utils
+from . import utils
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma

@@ -1,7 +1,7 @@
-import utils
-from podcast import Podcast
-from transcriber import AudioTranscriber, Transcript
-from ragengine import RAGEngine
+from . import utils
+from .podcast import Podcast
+from .transcriber import AudioTranscriber, Transcript
+from .ragengine import RAGEngine
 
 class PodSummer:
 
