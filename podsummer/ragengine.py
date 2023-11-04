@@ -1,6 +1,6 @@
 import os
 from . import utils
-from transcript import Transcript
+from .transcript import Transcript
 from langchain.llms.openai import OpenAIChat
 from langchain.chains import RetrievalQA, ConversationalRetrievalChain
 
