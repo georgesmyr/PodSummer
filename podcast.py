@@ -8,7 +8,10 @@ class Podcast:
         self.feed = feedparser.parse(url)
         # Podcast Information
         self.title = self.feed.feed.title
-        self.subtitle = self.feed.feed.subtitle
+        try:
+            self.subtitle = self.feed.feed.subtitle
+        except:
+            pass
         # Last Episode
         self.episode = Episode(self.title, self.feed.entries[0])
 
