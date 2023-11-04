@@ -14,6 +14,7 @@ class PodSummer:
         """ Loads podcast """
         # Load podcast from URL
         self.podcast = Podcast(url)
+        self.podcast.episode.download()
 
     def transcribe_audio(self, trans_model='base', device='cuda',
                         compute_type='float16', align=True, diarize=False):
