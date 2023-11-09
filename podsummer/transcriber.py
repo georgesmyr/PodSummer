@@ -1,14 +1,8 @@
 import torch
 import whisperx
 import gc
-import os
 from pathlib import Path
-
 from . import utils
-
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Chroma
-from langchain.embeddings import OpenAIEmbeddings
 
 class AudioTranscriber:
     """ Class that transcribes audio """
@@ -59,34 +53,3 @@ class AudioTranscriber:
         utils.save_json(result, transcript_path)
         
         return result
-
-
-class Transcript:
-
-    def __init__(self, path):
-        """ Loads Trascript from path """
-        self.path = path
-        self.raw= utils.load_json(path)
-        self.segments = [{'start': segment['start'], 'end': segment['end'], 'text': segment['text']} for segment in self.raw['segments']]
-        try:
-            self.word_segments = self.raw['word_segments']
-        except:
-            pass
-        self.texts = [segment['text'] for segment in self.segments]
-        self.text = ' '.join(self.texts)
-
-        os.environ["OPENAI_API_KEY"] = utils.load_text('api_key.txt')
-
-
-    def split_text(self, chunks, chunk_overlap=0.1):
-        """ Splits text into chunks of size `chunks` with overlap of `chunk_overlap` """
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size = chunks, chunk_overlap  = chunk_overlap, length_function = len, add_start_index = True)
-        texts = text_splitter.create_documents([self.text])
-        return texts
-    
-    def get_text_embeddings(self, text_chunks):
-        """ Gets embeddings for text chunks, and returs the retriever """
-        vectordb = Chroma.from_documents(text_chunks, embedding=OpenAIEmbeddings(), persist_directory=str(Path(self.path).parent.joinpath('vectorstore_text')))
-        vectordb.persist()
-        retriever = vectordb.as_retriever(search_kwargs={'k': 7})
-        return retriever
