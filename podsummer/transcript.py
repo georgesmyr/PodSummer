@@ -31,13 +31,7 @@ class Transcript:
             self.text = self.raw
         elif extension == '.json':
             self.raw = utils.load_json(path)
-            self.segments = [{'start': segment['start'], 'end': segment['end'], 'text': segment['text']} for segment in self.raw['segments']]
-            try:
-                self.word_segments = self.raw['word_segments']
-            except:
-                pass
-            self.texts = [segment['text'] for segment in self.segments]
-            self.text = ' '.join(self.texts)
+            self._extract_data_from_dict_raw()
         else:
             raise ValueError('File type not supported')
 
@@ -48,16 +42,20 @@ class Transcript:
         if isinstance(raw, str):
             self.text = raw
         elif isinstance(raw, dict):
-            self.segments = [{'start': segment['start'], 'end': segment['end'], 'text': segment['text']} for segment in self.raw['segments']]
-            try:
-                self.word_segments = self.raw['word_segments']
-            except:
-                pass
-            self.texts = [segment['text'] for segment in self.segments]
-            self.text = ' '.join(self.texts)
+            self._extract_data_from_dict_raw()
         else:
             raise ValueError('Raw type not supported')
 
+
+    def _extract_data_from_dict_raw(self):
+        """  """
+        self.segments = [{'start': segment['start'], 'end': segment['end'], 'text': segment['text']} for segment in self.raw['segments']]
+        try:
+            self.word_segments = self.raw['word_segments']
+        except:
+            pass
+        self.texts = [segment['text'] for segment in self.segments]
+        self.text = ' '.join(self.texts)
 
 
     # def split_text(self, chunks, chunk_overlap=0.1):
