@@ -28,6 +28,9 @@ class Transcript:
         _, extension = os.path.splitext(path)
         if extension == '.txt':
             self.raw = utils.load_text(path)
+            self.text = self.raw
+        elif extension == '.json':
+            self.raw = utils.load_json(path)
             self.segments = [{'start': segment['start'], 'end': segment['end'], 'text': segment['text']} for segment in self.raw['segments']]
             try:
                 self.word_segments = self.raw['word_segments']
@@ -35,9 +38,6 @@ class Transcript:
                 pass
             self.texts = [segment['text'] for segment in self.segments]
             self.text = ' '.join(self.texts)
-        elif extension == '.json':
-            self.raw = utils.load_json(path)
-            self.text = self.raw
         else:
             raise ValueError('File type not supported')
 
