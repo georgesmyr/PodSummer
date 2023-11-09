@@ -48,14 +48,15 @@ class Transcript:
 
 
     def _extract_data_from_dict_raw(self):
-        """  """
-        self.segments = [{'start': segment['start'], 'end': segment['end'], 'text': segment['text']} for segment in self.raw['segments']]
-        try:
-            self.word_segments = self.raw['word_segments']
-        except:
-            pass
-        self.texts = [segment['text'] for segment in self.segments]
-        self.text = ' '.join(self.texts)
+        """ Extract data from dict raw """
+        if isinstance(self.raw, dict):
+            self.segments = [{'start': segment['start'], 'end': segment['end'], 'text': segment['text']} for segment in self.raw['segments']]
+            # try:
+            #     self.word_segments = self.raw['word_segments']
+            # except:
+            #     pass
+            self.text = ' '.join([segment['text'] for segment in self.segments])
+            self.timed_text = '\n '.join([f"{segment['start']} {segment['text']} {segment['end']}" for segment in self.segments])
 
 
     # def split_text(self, chunks, chunk_overlap=0.1):
