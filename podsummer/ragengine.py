@@ -1,7 +1,7 @@
 import os
 import openai
 from . import utils
-from .transcriber import Transcript
+from .transcript import Transcript
 from langchain.llms.openai import OpenAIChat
 from langchain.chains import RetrievalQA, ConversationalRetrievalChain
 
