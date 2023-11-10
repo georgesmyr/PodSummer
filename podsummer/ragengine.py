@@ -28,6 +28,7 @@ MODELS = ['gpt-3.5-turbo', 'gpt-4']
 
 class OpenAIAssistant:
 
+
     def __init__(self, llm_model, api_key):
         """ Initialise """
 
@@ -42,6 +43,7 @@ class OpenAIAssistant:
         self.transcript = None
         self.assistant = None
         self.thread = self.client.beta.threads.create()
+
 
     def load_transcript(self, transcript : Transcript) -> None:
         """ Loads the transcript """
@@ -87,11 +89,13 @@ class OpenAIAssistant:
         messages = self.client.beta.threads.messages.list(thread_id=self.thread.id)
         print(f"{messages.data[0].role.upper()}:", messages.data[0].content[0].text.value)
     
+
     def print_messages(self):
         """ Prints the messages from the current thread """
         messages = self.client.beta.threads.messages.list(thread_id=self.thread.id)
         for message in messages:
             print(f"{message.role.upper()}: ", message.content[0].text.value, '\n')
+
 
     def summarize_transcript(self):
         """ Summarizes the transcript text """
