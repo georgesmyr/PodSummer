@@ -6,7 +6,6 @@ from langchain.llms.openai import OpenAIChat
 from langchain.chains import RetrievalQA, ConversationalRetrievalChain
 
 
-client = openai.OpenAI(api_key = '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')
 ASSISTANT_NAME = 'PodChat'
 ASSISTANT_INSTRUCTIONS = """ Assist podcast enthusiasts by summarizing episodes from provided transcripts
                             and answering content-related queries.\n """
