@@ -8,6 +8,7 @@ class Podcast:
         self.feed = feedparser.parse(url)
         # Podcast Information
         self.title = self.feed.feed.title
+        self.image = self.feed.feed.image.href
         try:
             self.subtitle = self.feed.feed.subtitle
         except:
