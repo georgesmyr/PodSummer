@@ -6,29 +6,46 @@ from langchain.llms.openai import OpenAIChat
 from langchain.chains import RetrievalQA, ConversationalRetrievalChain
 
 
-ASSISTANT_NAME = ''
-ASSISTANT_INSTRUCTIONS = """ """
+client = openai.OpenAI(api_key = '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')
+ASSISTANT_NAME = 'PodChat'
+ASSISTANT_INSTRUCTIONS = """ Assist podcast enthusiasts by summarizing episodes from provided transcripts
+                            and answering content-related queries.\n """
+
+CONTENT_BREAKDOWN_INSTRUCTIONS = """ The transcript that is provided to you is in the form of a list of JSON objects. 
+                                    Each JSON object has a start, end, and text field.
+                                    The start and end fields are the start and end times of the text in seconds.
+                                    The text field is the text that is spoken between the start and end times."""
+MODELS = ['gpt-3, gpt-4']
 
 class OpenAIAssistant:
 
-    def __init__(self, api_key):
+    def __init__(self, model, api_key):
+        """ Initialise """
+        if model not in MODELS:
+            raise ValueError("The assistant model can be either 'gpt-3' or 'gpt-4'")
+        self.model = f"{model}-1106-preview"        
         self.client = openai.OpenAI(api_key = api_key)
         self.transcript = None
         self.assistant = None
-        self.thread = None
-        self.chat_history = []
+        self.thread = self.client.beta.threads.create()
 
-    def load_transcript(self, path : str) -> None:
+    def load_transcript(self, transcript : Transcript) -> None:
         """ Loads the transcript """
-        self.transcript = self.client.files.create(file=open(path, 'rb'),
-                                                    purpose='answers')
+        self.transcript = self.client.files.create(file=transcript.text.encode('utf-8'),
+                                                    purpose='assistants')
         
         self.assistant = self.client.beta.assistants.create(name=ASSISTANT_NAME,
                                                             instructions=ASSISTANT_INSTRUCTIONS,
                                                             tools=[{"type": "retrieval"}],
                                                             model="gpt-4-1106-preview",
                                                             file_ids=[self.transcript.id])
-        self.thread = self.client.beta.threads.create()
+        
+    def query(self, message : str) -> str:
+        """ Queries the assistant """
+
+        message = self.client.beta.threads.messages.create(thread_id=self.thread.id,
+                                                           role="user",
+                                                           content=message)
         
         
 

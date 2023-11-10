@@ -54,3 +54,14 @@ def to_filename(text):
     return re.sub(r'\s+', ' ', re.sub(r'[^\w\s]', ' ', text)).strip().lower().replace(" ", "_")
 
 
+def print_status(status):
+    """ Prints response status in desired format """
+    if '_' in status:
+        status_ls = status.split('_')
+        status = ' '.join([status_ls[0].capitalize()] + status_ls[1:])
+    else:
+        status = status.capitalize()
+
+    print('Status:', status)
+
+
