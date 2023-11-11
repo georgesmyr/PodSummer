@@ -17,14 +17,17 @@ class PodSummer:
         self.podcast = Podcast(url)
         self.podcast.episode.download()
 
-    def transcribe_audio(self, trans_model='base', device='cuda',
+    def transcribe_audio(self, hf_token, trans_model='base', device='cuda',
                         compute_type='float16', align=True, diarize=False):
         """ Transcribes audio and loads transcript """
         # Transcribe audio
-        transcriber = AudioTranscriber(trans_model=trans_model, device=device, compute_type=compute_type)
+        transcriber = AudioTranscriber(hf_token=hf_token ,trans_model=trans_model,
+                                        device=device, compute_type=compute_type)
+        
         result = transcriber.transcribe_audio(audio_path=self.podcast.episode.file_paths['audio'],
                                               transcript_path=self.podcast.episode.file_paths['transcript'],
                                               align=align, diarize=diarize)
+        # Set transcript
         self.transcript = Transcript(path=self.podcast.episode.file_paths['transcript'])
         
     def load_transcript(self):

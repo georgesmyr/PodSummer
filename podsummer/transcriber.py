@@ -7,13 +7,14 @@ from . import utils
 class AudioTranscriber:
     """ Class that transcribes audio """
 
-    def __init__(self, trans_model="large-v2", batch_size=16, device='cuda', compute_type="float16"):
+    def __init__(self, hf_token, trans_model="large-v2", batch_size=16, device='cuda', compute_type="float16"):
         """ Initialise the transcriber """
         self.device = device
         self.batch_size = batch_size
         self.compute_type = compute_type
         self.trans_model = trans_model
-        self.HF_TOKEN = "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"
+        self.HF_TOKEN = hf_token
+
 
     def transcribe_audio(self, audio_path, transcript_path, align=False, diarize=False):
         """ Transcribe the audio, align the transcription with the audio and diarize the audio """

@@ -15,7 +15,10 @@ CONTENT_BREAKDOWN_INSTRUCTIONS = """ The transcript that is provided to you is i
                                     The start and end fields are the start and end times of the text in seconds.
                                     The text field is the text that is spoken between the start and end times."""
 
-SUMMARY_PROMPT = """ Given the attached transcription file of a podcast episode,
+def SUMMARY_PROMPT(podcast_title, episode_title):
+    """ Returns the summary prompt specifically for the podcast episode """
+
+    return f""" Given the attached transcription file of the episode {episode_title} from the podcast {podcast_title},
                       please analyze the structure and content of the transcription. Note the key topics discussed,
                       the main points made by the host and any guests, and any significant conclusions drawn during the episode.
                       Provide a concise summary that captures the essence of the episode, its thematic focus,
@@ -26,8 +29,8 @@ SUMMARY_PROMPT = """ Given the attached transcription file of a podcast episode,
 
 MODELS = ['gpt-3.5-turbo', 'gpt-4']
 
-class OpenAIAssistant:
 
+class OpenAIAssistant:
 
     def __init__(self, llm_model, api_key):
         """ Initialise """
@@ -56,6 +59,7 @@ class OpenAIAssistant:
                                                             tools=[{"type": "retrieval"}],
                                                             model=self.llm_model,
                                                             file_ids=[self.transcript.id])
+
 
     def query(self, message : str, verbose : bool = True) -> str:
         """ Queries the assistant """
@@ -97,9 +101,9 @@ class OpenAIAssistant:
             print(f"{message.role.upper()}: ", message.content[0].text.value, '\n')
 
 
-    def summarize_transcript(self, verbose : bool = True):
+    def summarize_transcript(self, podcast_title, episode_title, verbose : bool = True):
         """ Summarizes the transcript text """
-        return self.query(message=SUMMARY_PROMPT, verbose=verbose)
+        return self.query(message=SUMMARY_PROMPT(podcast_title, episode_title), verbose=verbose)
         
         
 
