@@ -40,7 +40,9 @@ class PodSummer:
     
     def summarize_transcript(self, verbose : bool = True):
         """ Summarizes the podcast and saves the summary """
-        self.agent.summarize_transcript()
+        self.agent.summarize_transcript(podcast_title=self.podcast.title,
+                                        episode_title=self.podcast.episode.title,
+                                        verbose=verbose)
 
 
         
