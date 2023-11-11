@@ -2,14 +2,14 @@ from . import utils
 from .podcast import Podcast
 from .transcriber import AudioTranscriber
 from .transcript import Transcript
-from .ragengine import RAGEngine
+from .ragengine import OpenAIAssistant
 
 class PodSummer:
 
-    def __init__(self):
+    def __init__(self, llm_model : str, api_key : str):
         """ Initialise the Podsummer = Podcast + Transcription + LLM """
         # Load LLM
-        self.ragEngine = RAGEngine()
+        self.agent = OpenAIAssistant(llm_model=llm_model, api_key=api_key)
 
     def fetch_podcast(self, url):
         """ Loads podcast """
@@ -22,22 +22,22 @@ class PodSummer:
         """ Transcribes audio and loads transcript """
         # Transcribe audio
         transcriber = AudioTranscriber(trans_model=trans_model, device=device, compute_type=compute_type)
-        result = transcriber.transcribe_audio(self.podcast.episode.file_paths['audio'],
-                                                self.podcast.episode.file_paths['transcript'],
-                                                align=align, diarize=diarize)
-        self.transcript = Transcript(self.podcast.episode.file_paths['transcript'])
+        result = transcriber.transcribe_audio(audio_path=self.podcast.episode.file_paths['audio'],
+                                              transcript_path=self.podcast.episode.file_paths['transcript'],
+                                              align=align, diarize=diarize)
+        self.transcript = Transcript(path=self.podcast.episode.file_paths['transcript'])
         
     def load_transcript(self):
         """ Load transcript on RAG engine """
-        self.ragEngine.load_transcript(self.transcript)
+        self.agent.load_transcript(transcript=self.transcript)
 
-    def query(self, query):
+    def query(self, message : str, verbose : bool = True):
         """ Query the LLM """
-        return self.ragEngine.query(query)
+        return self.agent.query(message=message, verbose=verbose)
     
-    def summarize(self):
+    def summarize_transcript(self, verbose : bool = True):
         """ Summarizes the podcast and saves the summary """
-        pass
+        self.agent.summarize_transcript()
 
 
         

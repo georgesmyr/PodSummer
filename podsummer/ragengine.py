@@ -97,9 +97,9 @@ class OpenAIAssistant:
             print(f"{message.role.upper()}: ", message.content[0].text.value, '\n')
 
 
-    def summarize_transcript(self):
+    def summarize_transcript(self, verbose : bool = True):
         """ Summarizes the transcript text """
-        return self.query(message=SUMMARY_PROMPT)
+        return self.query(message=SUMMARY_PROMPT, verbose=verbose)
         
         
 
