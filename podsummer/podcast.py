@@ -16,6 +16,13 @@ class Podcast:
         # Last Episode
         self.episode = Episode(self.title, self.feed.entries[0])
 
+
+    def __repr__(self):
+        """ Representation of Podcast Object """
+        return f"""Podcast[Podcast={self.title},
+                    Episode={self.episode.title}]"""
+
+
 class Episode:
     """ Class that holds episode information """
     def __init__(self, podcast_title, episode_feed):
@@ -27,6 +34,7 @@ class Episode:
                 self.url = link.href
         # Save files paths
         self.file_paths = self.setup_paths()
+
 
     def setup_paths(self):
         """ Sets up the file pats for the episode """
@@ -54,7 +62,14 @@ class Episode:
 
         return paths
 
+
     def download(self):
         """ Downloads the episode audio """
         # Check file type before downloading
         utils.download_audio(self.url, audio_path=self.file_paths['audio'])
+
+
+    def __repr__(self):
+        """ Representation of Episode Object """
+        return f"""Episode[Podcast={self.podcast},
+                    Episode={self.title}]"""
