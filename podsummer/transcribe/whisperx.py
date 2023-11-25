@@ -64,11 +64,11 @@ class WhisperXTranscriber(AudioTranscriber):
         if align:
             result = self._align(audio, result)
             mode = 'aligned'
-            if diarize:
-                if not self.HF_TOKEN:
-                    raise ValueError("You must provide a HuggingFace token to diarize.")
-                result = self._diarize(audio, result)
-                mode = 'diarized'
+            # if diarize:
+            #     if not self.HF_TOKEN:
+            #         raise ValueError("You must provide a HuggingFace token to diarize.")
+            #     result = self._diarize(audio, result)
+            #     mode = 'diarized'
 
         result['mode'] = mode
         print('Saving result...')
