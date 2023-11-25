@@ -62,7 +62,7 @@ class WhisperXTranscriber(AudioTranscriber):
         mode = 'transcribed'
         # Align the transcription with the audio
         if align:
-            result = self._align(result)
+            result = self._align(audio, result)
             mode = 'aligned'
             if diarize:
                 if not self.HF_TOKEN:
