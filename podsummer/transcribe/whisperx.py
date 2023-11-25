@@ -40,7 +40,7 @@ class WhisperXTranscriber(AudioTranscriber):
     def _align(self, audio, transcript):
         """ Align the transcription with the audio """
         print("Aligning the transcription with the audio...")
-        align_model, metadata = whisperx.load_align_model(language_code=result['language'],
+        align_model, metadata = whisperx.load_align_model(language_code=transcript['language'],
                                                             device=self.device)
         result = whisperx.align(transcript["segments"], align_model,
                                 metadata, audio, self.device, return_char_alignments=False)
