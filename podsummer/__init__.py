@@ -1,9 +1,16 @@
-from . import utils
-from . import podcast
-from . import transcriber
-from . import transcript
-from . import ragengine
-from . import podsummer
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-__all__ = ['utils', 'podcast', 'transcriber', 'transcript', 'ragengine', 'podsummer']
+from podsummer import utils
+from podsummer import media
+from podsummer import metadata
+from podsummer import transcriber
+from podsummer import transcript
+
+__all__ = ['utils',
+            'media',
+            'metadata',
+            'transcriber', 
+            'transcript']
 

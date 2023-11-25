@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.1'
+VERSION = '2.0.0'
 DESCRIPTION = 'Chat with a podcast episode '
 LONG_DESCRIPTION = """Podsummer is a Python library that gets the the episode of a podcast, downloads the audio, ranscribes it 
                         and enables the user to chat with its content."""

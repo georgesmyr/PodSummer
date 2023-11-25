@@ -3,6 +3,7 @@ import os
 
 from . import utils
 
+
 class Transcript:
     """ Transcript class """
 
