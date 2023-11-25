@@ -1,8 +1,8 @@
 from pathlib import Path
 from pytube import YouTube
 
-from .base import *
-from .. import utils
+from podsummer.metadata.base import *
+import utils
 
 class YouTubeVideoMetadataManager(BaseMetadataManager):
     """ Youtube video metadata manager """ 

@@ -1,7 +1,8 @@
 from typing import Optional
-from .base import MediaSource
-from .rss import RSSPodcast
-from .youtube import YouTubeVideo, YouTubePlaylist
+
+from podsummer.media.base import MediaSource
+from podsummer.media.rss import RSSPodcast
+from podsummer.media.youtube import YouTubeVideo, YouTubePlaylist
 
 class SourceFactory:
     @staticmethod

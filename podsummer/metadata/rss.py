@@ -1,8 +1,8 @@
 from pathlib import Path
 import json
 
-from .base import *
-from .. import utils
+from podsummer.metadata.base import *
+import utils
 
 class PodcastMetadataManager(BaseMetadataManager):
     """  """

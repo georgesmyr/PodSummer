@@ -5,9 +5,9 @@ import json
 import requests, feedparser
 from fuzzywuzzy import fuzz
 
-from .base import MediaSource
-from ..metadata.rss import PodcastMetadataManager
-from ..metadata.base import METADATA_KEYS
+from podsummer.media.base import MediaSource
+from podsummer.metadata.rss import PodcastMetadataManager
+from podsummer.metadata.base import METADATA_KEYS
 
 
 class RSSPodcast(MediaSource):

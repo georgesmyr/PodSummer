@@ -1,8 +1,8 @@
 import pytube
 
-from .base import MediaSource
-from ..metadata.base import METADATA_KEYS
-from ..metadata.youtube import YouTubeVideoMetadataManager
+from podsummer.media.base import MediaSource
+from podsummer.metadata.base import METADATA_KEYS
+from podsummer.metadata.youtube import YouTubeVideoMetadataManager
 
 class YouTubeVideo(MediaSource):
     """ YouTube video source class """
@@ -48,3 +48,37 @@ class YouTubeVideo(MediaSource):
             return transcript_json
         except:
             return None
+        
+
+class YouTubePlaylist(MediaSource):
+    """ YouTube playlist source class """
+
+    def __init__(self, url : str) -> None:
+        """ 
+        Initialises YouTubePlaylist
+        :param url: YouTube playlist URL
+        """
+        self.url = url
+        self._feed = pytube.Playlist(self.url)
+        self.title = self._feed.title
+        self.fetch_metadata()
+
+    def __repr__(self):
+        """ Representation of YouTubePlaylist Object """
+        return f"""YouTubePlaylist[Playlist = {self.title}]"""
+
+    def fetch_metadata(self) -> None:
+        """ Fetches YouTube playlist metadata """
+        self.youtube_videos = [YouTubeVideo(video_url) for video_url in self._feed.video_urls]
+
+    def download_audio(self):
+        """ Downloads the audio of all YouTube videos in the playlist """
+        for video in self.youtube_videos:
+            video.download_audio()
+
+    def download_transcript(self):
+        """ Downloads transcripts of all YouTube videos in the playlist """
+        title_transcript_dict = {}
+        for video in self.youtube_videos:
+            title_transcript_dict.update({video.title: video.download_transcript()})
+        return title_transcript_dict

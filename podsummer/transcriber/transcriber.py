@@ -1,8 +1,8 @@
 import torch, gc
 from pathlib import Path
 
-from . import utils
-from .base import AudioTranscriber
+import utils
+from podsummer.transcriber.base import AudioTranscriber
 
 class WhisperXTranscriber(AudioTranscriber):
     """ Class that transcribes audio """
