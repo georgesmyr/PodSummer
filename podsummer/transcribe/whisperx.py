@@ -30,14 +30,14 @@ class WhisperXTranscriber(AudioTranscriber):
         print("Deleting model to free up GPU resources...")
         gc.collect(); torch.cuda.empty_cache(); del model
     
-    def _transcribe(self, audio, offload_gpu=True):
+    def _transcribe(self, audio):
         """ Transcribe only """
         print("Transcribing audio with WhisperX...")
         trans_model = whisperx.load_model(self.trans_model, device=self.device, compute_type=self.compute_type)
         result = trans_model.transcribe(audio, batch_size=self.batch_size)
         return result
     
-    def _align(self, audio, transcript, offload_gpu=True):
+    def _align(self, audio, transcript):
         """ Align the transcription with the audio """
         print("Aligning the transcription with the audio...")
         align_model, metadata = whisperx.load_align_model(language_code=result['language'],
@@ -46,7 +46,7 @@ class WhisperXTranscriber(AudioTranscriber):
                                 metadata, audio, self.device, return_char_alignments=False)
         return result
     
-    def _diarize(self, audio, transcript, offload_gpu=True):
+    def _diarize(self, audio, transcript):
         """ Diarize the audio and transcript """
         print("Diarizing...")
         diarize_model = whisperx.DiarizationPipeline(use_auth_token=self.HF_TOKEN, device=self.device)
@@ -67,7 +67,7 @@ class WhisperXTranscriber(AudioTranscriber):
             if diarize:
                 if not self.HF_TOKEN:
                     raise ValueError("You must provide a HuggingFace token to diarize.")
-                result = self._diarize(result)
+                result = self._diarize(audio, result)
                 mode = 'diarized'
 
         result['mode'] = mode
