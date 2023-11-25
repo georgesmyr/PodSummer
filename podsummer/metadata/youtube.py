@@ -2,7 +2,7 @@ from pathlib import Path
 from pytube import YouTube
 
 from podsummer.metadata.base import *
-import utils
+from podsummer import utils
 
 class YouTubeVideoMetadataManager(BaseMetadataManager):
     """ Youtube video metadata manager """ 

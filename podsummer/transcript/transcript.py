@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 
-from . import utils
+from podsummer import utils
 
 
 class Transcript:
