@@ -34,6 +34,5 @@ class YouTubeVideoMetadataManager(BaseMetadataManager):
                 METADATA_KEYS["IMAGE_URL"]: self.feed.thumbnail_url,
                 METADATA_KEYS["CREATORS"]: [self.feed.author],
                 METADATA_KEYS["TITLE"]: self.feed.title,
-                METADATA_KEYS["AUDIO_STREAM"]: self.feed.streams.filter(only_audio=True).order_by('abr').desc().first(),
-               METADATA_KEYS["VIDEO_ID"]: self.feed.video_id})
+                METADATA_KEYS["AUDIO_STREAM"]: self.feed.streams.filter(only_audio=True).order_by('abr').desc().first()})
         
