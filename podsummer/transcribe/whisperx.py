@@ -35,8 +35,6 @@ class WhisperXTranscriber(AudioTranscriber):
         print("Transcribing audio with WhisperX...")
         trans_model = whisperx.load_model(self.trans_model, device=self.device, compute_type=self.compute_type)
         result = trans_model.transcribe(audio, batch_size=self.batch_size)
-        if offload_gpu:
-            self._offload_gpu(trans_model)
         return result
     
     def _align(self, audio, transcript, offload_gpu=True):
@@ -46,8 +44,6 @@ class WhisperXTranscriber(AudioTranscriber):
                                                             device=self.device)
         result = whisperx.align(transcript["segments"], align_model,
                                 metadata, audio, self.device, return_char_alignments=False)
-        if offload_gpu:
-            self._offload_gpu(align_model)
         return result
     
     def _diarize(self, audio, transcript, offload_gpu=True):
@@ -56,8 +52,6 @@ class WhisperXTranscriber(AudioTranscriber):
         diarize_model = whisperx.DiarizationPipeline(use_auth_token=self.HF_TOKEN, device=self.device)
         diarize_segments = diarize_model(audio)
         result = whisperx.assign_word_speakers(diarize_segments, transcript)
-        if offload_gpu:
-            self._offload_gpu(diarize_model)
         return result
 
     def transcribe_audio(self, audio_path, transcript_path, align=False, diarize=False):
