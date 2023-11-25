@@ -58,7 +58,7 @@ class RSSPodcast(MediaSource):
     
     def download_audio(self):
         """ Downloads audio from the source """
-        with requests.get(getattr(self,METADATA_KEYS["AUDIO_NAME"]), stream=True) as response:
+        with requests.get(getattr(self,METADATA_KEYS["AUDIO_STREAM"]), stream=True) as response:
             response.raise_for_status()
             with open(self.store_paths[METADATA_KEYS["AUDIO_FILENAME"].split('.')[0]], 'wb') as f:   
                 for chunk in response.iter_content(chunk_size=8192):
