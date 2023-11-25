@@ -1,5 +1,10 @@
 import torch, gc
 from pathlib import Path
+try:
+    import whisperx
+except ImportError:
+    raise ImportError("""WhisperX is not installed. Please install it with
+                        pip install git+https://github.com/m-bain/whisperx.git""")
 
 from podsummer import utils
 from podsummer.transcribe.base import AudioTranscriber
@@ -9,11 +14,6 @@ class WhisperXTranscriber(AudioTranscriber):
 
     def __init__(self, hf_token, trans_model="large-v2", batch_size=16, device='cuda', compute_type="float16"):
         """ Initialise the transcriber """
-        try:
-            import whisperx
-        except ImportError:
-            raise ImportError("""WhisperX is not installed. Please install it with
-                                pip install git+https://github.com/m-bain/whisperx.git""")
         self.device = device
         self.batch_size = batch_size
         self.compute_type = compute_type
