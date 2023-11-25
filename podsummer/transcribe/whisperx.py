@@ -28,7 +28,7 @@ class WhisperXTranscriber(AudioTranscriber):
     def _offload_gpu(self, model):
         """ Offloads model from GPU """
         print("Deleting model to free up GPU resources...")
-        gc.collect(); torch.cuda.empty_cache(); del align_model
+        gc.collect(); torch.cuda.empty_cache(); del model
     
     def _transcribe(self, audio, offload_gpu=True):
         """ Transcribe only """
